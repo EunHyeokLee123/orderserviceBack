@@ -1,5 +1,6 @@
 package com.playdata.orderserviceback.user.controller;
 
+import com.playdata.orderserviceback.common.dto.CommonResDTO;
 import com.playdata.orderserviceback.user.dto.UserSaveReqDTO;
 import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.service.UserService;
@@ -36,16 +37,22 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/create")
-    public ResponseEntity<User> userCreate(@Valid @RequestBody UserSaveReqDTO dto) {
+    public ResponseEntity<?> userCreate(@Valid @RequestBody UserSaveReqDTO dto) {
         // 화면단에서 전달된 데이터를 DB에 넣자
         // 혹시 이메일이 중복되었는가를 먼저 검사해야함 (UNIQUE 제약조건)
         // 중복되면 회원가입을 거절해야 함.
         // dto를 entity로 바꾸는 로직 필요
         User saved = userService.userCreate(dto);
-        
+
+        CommonResDTO resDTO
+                = new CommonResDTO(HttpStatus.CREATED,
+                "User Created", saved.getEmail());
+
+
+
         // ResponseEntity: 응답을 줄 때 다양한 정보를 한번에 포장해서 넘길 수 있음.
         // 요청에 따른 응답 상태 코드, 응답 헤더에 정보를 추가, 일관된 응답 처리를 제공
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+        return new ResponseEntity<>(resDTO, HttpStatus.CREATED);
 
     }
 
