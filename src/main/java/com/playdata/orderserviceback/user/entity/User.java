@@ -4,6 +4,10 @@ import com.playdata.orderserviceback.common.entity.Address;
 import jakarta.persistence.*;
 import lombok.*;
 
+
+// entity에 setter를 구현하지 않는 이유는 entity 자체가 DB와 연동하기 위한 객체이기 때문
+// DB에 삽입되는 데이터, 또는 DB에서 조회되는 데이터는 그 자체로 사용하고 수정되지 않게끔
+// setter를 사용하지 않는 것을 권장
 @Getter
 @ToString
 @NoArgsConstructor

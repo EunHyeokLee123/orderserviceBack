@@ -1,17 +1,14 @@
 package com.playdata.orderserviceback.common.entity;
 
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 // 타 entity에서 사용 가능한 형태로 만드는 어노테이션
 // 다양한 곳에서 사용할 entity라서 Embeddable 선언함.
 @Embeddable
 @Getter @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder @ToString
 public class Address {
 
     private String city;
