@@ -1,9 +1,11 @@
 package com.playdata.orderserviceback.user.service;
 
 
+import com.playdata.orderserviceback.user.dto.UserLoginReqDTO;
 import com.playdata.orderserviceback.user.dto.UserSaveReqDTO;
 import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -37,4 +39,17 @@ public class UserService {
 
     }
 
+    public User login(UserLoginReqDTO dto) {
+        // 이메일로 user 조회하기
+        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(
+                () -> new EntityNotFoundException("User nt Found!")
+        );
+
+        // 비밀번호 확인하기
+        if(!user.getPassword().equals(dto.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        return user;
+    }
 }

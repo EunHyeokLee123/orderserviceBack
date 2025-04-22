@@ -1,6 +1,8 @@
 package com.playdata.orderserviceback.user.controller;
 
+import com.playdata.orderserviceback.common.auth.JwtTokenProvider;
 import com.playdata.orderserviceback.common.dto.CommonResDTO;
+import com.playdata.orderserviceback.user.dto.UserLoginReqDTO;
 import com.playdata.orderserviceback.user.dto.UserSaveReqDTO;
 import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.service.UserService;
@@ -36,6 +38,8 @@ public class UserController {
     // 빈 등록된 서비스 객체를 자동으로 주입받자.
     private final UserService userService;
 
+    private final JwtTokenProvider jwtTokenProvider;
+
     @PostMapping("/create")
     public ResponseEntity<?> userCreate(@Valid @RequestBody UserSaveReqDTO dto) {
         // 화면단에서 전달된 데이터를 DB에 넣자
@@ -54,6 +58,23 @@ public class UserController {
         // 요청에 따른 응답 상태 코드, 응답 헤더에 정보를 추가, 일관된 응답 처리를 제공
         return new ResponseEntity<>(resDTO, HttpStatus.CREATED);
 
+    }
+
+    @PostMapping("/doLogin")
+    public ResponseEntity<?> doLogin(@RequestBody UserLoginReqDTO dto){
+        User user = userService.login(dto);
+        // 하단의 코드가 실행되었다면 로그인 성공한 것
+
+        // 회원정보가 일치한다면 -> 로그인 성공
+        // 로그인 유지를 해주고 싶다. 백엔드는 요청이 들어왔을 때 이 사람이 이전에 로그인 성공한
+        // 사람인지 알 수가 없음.
+        // 징표(JWT)를 만들어주자. -> 클라이언트에게 JWT를 넘겨주자.
+        String token = jwtTokenProvider.createToken(user.getEmail(), user.getPassword());
+
+        CommonResDTO resDTO
+                = new CommonResDTO(HttpStatus.OK, "로그인 성공", token);
+
+        return new ResponseEntity<>(resDTO, HttpStatus.OK);
     }
 
 }
