@@ -20,3 +20,12 @@ jwt:
   secretKey: rI9KLc/nWq+0ehvbQXjST52lIHi+A4PurdKwAe0ZcN+0LE1QBv7p0qhFx8wzt8PaigtMXpJHdIl6p4ILsLDasA==
 
 
+# log level setting
+logging:
+  level:
+    root: info
+    com:
+      playdata:
+        orderserviceback:
+          common=debug
+
