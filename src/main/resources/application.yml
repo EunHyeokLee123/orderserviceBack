@@ -23,9 +23,9 @@ jwt:
 # log level setting
 logging:
   level:
-    root: info
+    root: INFO
     com:
       playdata:
         orderserviceback:
-          common=debug
+          common: DEBUG
 
