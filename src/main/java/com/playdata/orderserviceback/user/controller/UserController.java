@@ -9,9 +9,13 @@ import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user") // user 관련 요청은 모두 /user로 시작한다.
@@ -76,7 +80,29 @@ public class UserController {
         return new ResponseEntity<>(resDTO, HttpStatus.OK);
     }
 
+    // 운영자용(admin) 회원 정보 조회 -> ADMIN만 회원 전체 목록 조회 가능
+    // 이 메소드 호출 전에, Role에 ADMIN이 있는지 확인
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/list")
+    // controller의 매개변수로 Pageable 선언하면 페이징 파라미터 처리를 쉽게 할 수 있음.
+    // /list?number=1&size=20&sort=desc -> 1page라서 값은 0으로 됨.
+    // 요청 시 쿼리스트링이 전달되지 않으면 기본값(0, 20, unsorted)로 처리됨.
+    public ResponseEntity<?> getUserList(Pageable pageable){
+
+        System.out.println("pageable = " + pageable);;
+        // /list?number=1&size=10&sort=name,desc 요런 식으로.
+        List<UserResDTO> dtoList = userService.userList(pageable);
+
+        CommonResDTO resDTO =
+                new CommonResDTO(HttpStatus.OK, "관리자용 회원 조회 성공", dtoList);
+
+        
+        // responseEntity에 전달 객체와 메시지를 한줄로 표현 가능
+        return ResponseEntity.ok().body(resDTO);
+    }
+
     // 회원 정보 조회 요청 (마이페이지) -> 로그인 한 회원만이 요청할 수 있음.
+    // 일반회원용 정보 조회
     @GetMapping("/myInfo")
     public ResponseEntity<?> getMyInfo(){
         UserResDTO dto = userService.myInfo();

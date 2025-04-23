@@ -4,8 +4,11 @@ import com.playdata.orderserviceback.common.dto.CommonErrorDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.nio.file.AccessDeniedException;
 
 
 //
@@ -38,6 +41,16 @@ public class CommonExceptionHandler {
 
     }
 
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<?> authDeniedHandler(AuthorizationDeniedException e) {
+        e.printStackTrace();
+
+        CommonErrorDTO errorDTO = new CommonErrorDTO(HttpStatus.FORBIDDEN, e.getMessage());
+
+        return new ResponseEntity<>(errorDTO, HttpStatus.FORBIDDEN);
+    }
+
     // 미처 준비하지 못한 타입의 예외가 발생했을 시 처리할 메소드
     // 혹시 모르니 모든 예외를 처리하는 메소드를 준비하는 것이 권장됨.
     @ExceptionHandler(Exception.class)
@@ -50,4 +63,5 @@ public class CommonExceptionHandler {
         return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR); // 500 에러
 
     }
+
 }

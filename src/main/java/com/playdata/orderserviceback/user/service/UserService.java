@@ -9,10 +9,14 @@ import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 // Service로 Bean 등록(Component와 동일하지만, 의미를 명시)
 @Service
@@ -69,5 +73,19 @@ public class UserService {
 
         return user.fromEntity();
 
+    }
+
+    public List<UserResDTO> userList(Pageable pageable) {
+        // Pageable 객체를 직접 생성할 필요가 없음
+        // Controller가 보내줌.
+
+        Page<User> all = userRepository.findAll(pageable);
+
+        // 실질적인 데이터
+        List<UserResDTO> content = all.getContent().stream()
+                .map(User::fromEntity)
+                .collect(Collectors.toList());
+
+        return content;
     }
 }

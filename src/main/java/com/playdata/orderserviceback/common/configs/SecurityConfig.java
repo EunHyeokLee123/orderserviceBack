@@ -39,6 +39,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> {
             // 권한 검사하지 말라는 설정
            auth.requestMatchers("/user/create", "/user/doLogin").permitAll()
+                //   .requestMatchers("/user/list").hasRole("ROLE_ADMIN")
             // 나머지 요청을 권한 검사를 진행하라는 설정
            .anyRequest().authenticated();
         });
