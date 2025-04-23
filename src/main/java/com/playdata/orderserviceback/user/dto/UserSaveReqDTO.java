@@ -6,6 +6,7 @@ import com.playdata.orderserviceback.user.entity.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 // 데이터 단순 운반용 객체, DTO
 // 프론트 단으로 전달할, 혹은 전달받는 데이터는 DTO를 따로 선언하여 포장하는 것을 권장
@@ -32,11 +33,11 @@ public class UserSaveReqDTO {
     private Address address;
 
     // dto가 가진 정보를 토대로 User Entity를 생성해서 리턴하는 메소드
-    public User toEntity() {
+    public User toEntity(PasswordEncoder encoder) {
         return User.builder()
                 .name(this.name)
                 .email(this.email)
-                .password(this.password)
+                .password(encoder.encode(this.password))
                 .address(this.address)
                 .build();
     }

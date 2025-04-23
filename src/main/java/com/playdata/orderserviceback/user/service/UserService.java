@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,10 +28,14 @@ public class UserService {
     // repository 객체를 자동으로 주입받자. (JPA가 만들어서 컨테이너에 등록해 놓음.)
     private final UserRepository userRepository;
 
+    // 비밀번호를 암호화해서 DB에 저장하기 위해서 사용하는 객체
+    private final PasswordEncoder encoder;
+
     // controller가 이 메소드를 호출할 것임.
     // 전달받은 DTO를 매개변수로 넘길 것임.
     public User userCreate(UserSaveReqDTO dto) {
-        Optional<User> foundEmail = userRepository.findByEmail(dto.getEmail());
+        Optional<User> foundEmail =
+                userRepository.findByEmail(dto.getEmail());
         // 이미 존재하는 이메일인 경우 -> 회원가입 불가
         if (foundEmail.isPresent()) {
             // 이미 존재하는 이메일이라는 에러를 발생 -> controller가 이 에러를 처리
@@ -39,7 +44,7 @@ public class UserService {
 
         // 이메일 중복 안됨 -> 회원가입 진행
         // dto를 entity로 변환하는 로직
-        User user = dto.toEntity();
+        User user = dto.toEntity(encoder);
         User saved = userRepository.save(user);
         return saved;
 
@@ -51,8 +56,8 @@ public class UserService {
                 () -> new EntityNotFoundException("User nt Found!")
         );
 
-        // 비밀번호 확인하기
-        if(!user.getPassword().equals(dto.getPassword())) {
+        // 비밀번호 확인하기 (암호화 되어 있으니 encoder에게 부탁)
+        if(!encoder.matches(dto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
