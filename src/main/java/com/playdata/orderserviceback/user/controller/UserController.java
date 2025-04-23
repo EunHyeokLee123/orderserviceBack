@@ -3,6 +3,7 @@ package com.playdata.orderserviceback.user.controller;
 import com.playdata.orderserviceback.common.auth.JwtTokenProvider;
 import com.playdata.orderserviceback.common.dto.CommonResDTO;
 import com.playdata.orderserviceback.user.dto.UserLoginReqDTO;
+import com.playdata.orderserviceback.user.dto.UserResDTO;
 import com.playdata.orderserviceback.user.dto.UserSaveReqDTO;
 import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.service.UserService;
@@ -66,7 +67,8 @@ public class UserController {
         // 로그인 유지를 해주고 싶다. 백엔드는 요청이 들어왔을 때 이 사람이 이전에 로그인 성공한
         // 사람인지 알 수가 없음.
         // 징표(JWT)를 만들어주자. -> 클라이언트에게 JWT를 넘겨주자.
-        String token = jwtTokenProvider.createToken(user.getEmail(), user.getPassword());
+        String token = jwtTokenProvider.createToken(user.getEmail()
+                , user.getRole().toString());
 
         CommonResDTO resDTO
                 = new CommonResDTO(HttpStatus.OK, "로그인 성공", token);
@@ -75,10 +77,14 @@ public class UserController {
     }
 
     // 회원 정보 조회 요청 (마이페이지) -> 로그인 한 회원만이 요청할 수 있음.
-    /*@GetMapping("/myInfo")
+    @GetMapping("/myInfo")
     public ResponseEntity<?> getMyInfo(){
+        UserResDTO dto = userService.myInfo();
+        CommonResDTO resDTO =
+                new CommonResDTO(HttpStatus.OK, "myInfo 조회 성공", dto);
 
 
-    }*/
+        return new ResponseEntity<>(resDTO, HttpStatus.OK);
+    }
 
 }

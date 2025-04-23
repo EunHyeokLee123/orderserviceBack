@@ -1,13 +1,15 @@
 package com.playdata.orderserviceback.user.service;
 
 
+import com.playdata.orderserviceback.common.auth.TokenUserInfo;
 import com.playdata.orderserviceback.user.dto.UserLoginReqDTO;
+import com.playdata.orderserviceback.user.dto.UserResDTO;
 import com.playdata.orderserviceback.user.dto.UserSaveReqDTO;
 import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -51,5 +53,21 @@ public class UserService {
         }
 
         return user;
+    }
+
+    // myPage에서 회원정보를 불러오는 메소드
+    public UserResDTO myInfo() {
+        // Security 컨테이너에 있는 User 정보를 가져오자
+        TokenUserInfo userInfo = 
+                // 필터에서 세팅한 시큐리티 인증 정보를 불러오는 메소드
+                (TokenUserInfo) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        User user = userRepository.findByEmail(userInfo.getEmail()).orElseThrow(
+                () -> new EntityNotFoundException("User nt Found!")
+        );
+
+        return user.fromEntity();
+
     }
 }

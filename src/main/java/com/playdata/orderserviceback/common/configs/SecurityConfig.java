@@ -1,5 +1,8 @@
 package com.playdata.orderserviceback.common.configs;
 
+import com.playdata.orderserviceback.common.auth.JwtAuthFilter;
+import com.playdata.orderserviceback.common.exception.CustomAuthenticationEntryPoint;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -8,11 +11,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration // 설정파일인 컴포넌트
 @EnableWebSecurity
 @EnableMethodSecurity // 권한 검사를 Controller의 메소드에서 전역적으로 수행하기 위한 설정
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     // security 기본 설정 (권한 처리, 초기 로그인 화면 없애기 등등)
     @Bean // 이 메소드가 리턴하는 시큐리티 설정을 빈으로 등록하겠다.
@@ -38,8 +46,17 @@ public class SecurityConfig {
         // "/user/create", "/user/doLogin"은 인증검사가 필요없고
         // 나머지 요청들은 권한 검사가 필요하다고 세팅했음.
         // 권한 검사가 필요한 요청들을 어떤 filter로 검사할지를 추가해주면 됨.
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
+        // 인증 과정애서 예외가 발생하면, 그 예외를 핸들링할 객체를 등록
+        http.exceptionHandling(
+                exception -> {
+                    exception.authenticationEntryPoint(customAuthenticationEntryPoint);
+                }
+        );
 
+        // 설정한 HttpSecurity 객체를 기반으로 시큐리티 설정 구축 및 반환.
+        return http.build();
     }
 
 }
