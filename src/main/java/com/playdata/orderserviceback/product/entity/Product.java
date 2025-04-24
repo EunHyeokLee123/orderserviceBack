@@ -24,6 +24,7 @@ public class Product extends BaseTimeEntity {
 
     private int price;
 
+    @Setter
     private int stockQuantity;
 
     @Setter // 해당 필드에만 setter가 적용됨.

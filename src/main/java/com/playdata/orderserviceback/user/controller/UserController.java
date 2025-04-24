@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user") // user 관련 요청은 모두 /user로 시작한다.
@@ -74,8 +76,16 @@ public class UserController {
         String token = jwtTokenProvider.createToken(user.getEmail()
                 , user.getRole().toString());
 
+        // Map을 이용해서 사용자의 id와 token을 포장하자.
+        // 프론트단에서 사용자가 누구인지 알게하기 위해 id를 넘겨주도록 하자.
+        Map<String, Object> loginInfo = new HashMap<>();
+        loginInfo.put("token", token);
+        loginInfo.put("id", user.getId());
+        loginInfo.put("role", user.getRole().toString());
+
         CommonResDTO resDTO
-                = new CommonResDTO(HttpStatus.OK, "로그인 성공", token);
+                = new CommonResDTO(HttpStatus.OK,
+                "로그인 성공", loginInfo);
 
         return new ResponseEntity<>(resDTO, HttpStatus.OK);
     }
