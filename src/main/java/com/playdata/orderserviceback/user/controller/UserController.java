@@ -10,6 +10,7 @@ import com.playdata.orderserviceback.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user") // user 관련 요청은 모두 /user로 시작한다.
@@ -43,6 +45,8 @@ public class UserController {
     private final UserService userService;
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @PostMapping("/create")
     public ResponseEntity<?> userCreate(@Valid @RequestBody UserSaveReqDTO dto) {
@@ -84,8 +88,20 @@ public class UserController {
         String RefreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(),
                 user.getRole().toString());
 
-        // refreshToken을 DB에 저장하자.
-        userService.saveRefreshToken(RefreshToken, user.getEmail());
+        // refreshToken을 DB에 저장하자. (redis에 저장하자.)
+        // userService.saveRefreshToken(RefreshToken, user.getEmail());
+
+        // key, value, 만료시간, 시간 단위를 넘겨주자.
+        redisTemplate.opsForValue().set(
+                // key
+                "user:refresh:"+user.getId(),
+                // value
+                RefreshToken,
+                // 만료 시간
+                2,
+                // 시간의 단위, 초,분,시,일,주 등 다양함.
+                TimeUnit.MINUTES);
+
 
         // Map을 이용해서 사용자의 id와 token을 포장하자.
         // 프론트단에서 사용자가 누구인지 알게하기 위해 id를 넘겨주도록 하자.

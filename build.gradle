@@ -45,6 +45,9 @@ dependencies {
 
     // Spring security
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    
+    // spring에서 제공하는 redis 의존성 라이브러리
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {
