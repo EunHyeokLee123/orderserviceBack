@@ -1,6 +1,7 @@
 package com.playdata.orderserviceback.user.controller;
 
 import com.playdata.orderserviceback.common.auth.JwtTokenProvider;
+import com.playdata.orderserviceback.common.dto.CommonErrorDTO;
 import com.playdata.orderserviceback.common.dto.CommonResDTO;
 import com.playdata.orderserviceback.user.dto.UserLoginReqDTO;
 import com.playdata.orderserviceback.user.dto.UserResDTO;
@@ -9,6 +10,7 @@ import com.playdata.orderserviceback.user.entity.User;
 import com.playdata.orderserviceback.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -19,11 +21,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user") // user 관련 요청은 모두 /user로 시작한다.
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
    /*
@@ -151,5 +155,37 @@ public class UserController {
         return new ResponseEntity<>(resDTO, HttpStatus.OK);
     }
 
+    // ACCESS_TOKEN이 만료되어 새 토큰을 요청
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> map){
+        // redis에 해당 id로 조회되는 내용이 있는지 확인하자
+        String id = map.get("id");
+        Object obj = redisTemplate.opsForValue().get("user:refresh:" + id);
+
+
+        // refresh 토큰이 만료된 경우
+        if(obj == null){
+            return new ResponseEntity<>(
+                    new CommonErrorDTO(HttpStatus.UNAUTHORIZED,
+                            "EXPIRED_RT"),
+                            HttpStatus.UNAUTHORIZED);
+        }
+        log.info(Objects.requireNonNull(obj).toString());
+        // 새로운 access token을 발급
+        User foundUser = userService.findById(id);
+        String newAccessToken = jwtTokenProvider.createToken(foundUser.getEmail(),
+                foundUser.getRole().toString());
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("token", newAccessToken);
+        info.put("id", foundUser.getId());
+        info.put("role", foundUser.getRole().toString());
+
+        CommonResDTO resDTO =
+                new CommonResDTO(HttpStatus.OK,
+                        "새로운 access token 발급됨", info);
+        return ResponseEntity.ok().body(resDTO);
+
+    }
 
 }

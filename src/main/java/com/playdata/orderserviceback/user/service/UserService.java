@@ -99,4 +99,11 @@ public class UserService {
 
 
     }
+
+    public User findById(String id) {
+
+    return userRepository.findById(Long.parseLong(id)).orElseThrow(
+            () -> new EntityNotFoundException("User nt Found!")
+    );
+    }
 }
