@@ -73,8 +73,19 @@ public class UserController {
         // 로그인 유지를 해주고 싶다. 백엔드는 요청이 들어왔을 때 이 사람이 이전에 로그인 성공한
         // 사람인지 알 수가 없음.
         // 징표(JWT)를 만들어주자. -> 클라이언트에게 JWT를 넘겨주자.
+        
+        // Access Token -> 수명 짧음
         String token = jwtTokenProvider.createToken(user.getEmail()
                 , user.getRole().toString());
+
+        // Refresh Token -> 수명 길음
+        // Access Token 수명이 만료되었을 경우 Refresh Token이 유효한 경우
+        // 로그인 없이 Access Token을 다시 발급해주자.
+        String RefreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(),
+                user.getRole().toString());
+
+        // refreshToken을 DB에 저장하자.
+        userService.saveRefreshToken(RefreshToken, user.getEmail());
 
         // Map을 이용해서 사용자의 id와 token을 포장하자.
         // 프론트단에서 사용자가 누구인지 알게하기 위해 id를 넘겨주도록 하자.
@@ -82,6 +93,7 @@ public class UserController {
         loginInfo.put("token", token);
         loginInfo.put("id", user.getId());
         loginInfo.put("role", user.getRole().toString());
+
 
         CommonResDTO resDTO
                 = new CommonResDTO(HttpStatus.OK,
@@ -122,5 +134,6 @@ public class UserController {
 
         return new ResponseEntity<>(resDTO, HttpStatus.OK);
     }
+
 
 }
