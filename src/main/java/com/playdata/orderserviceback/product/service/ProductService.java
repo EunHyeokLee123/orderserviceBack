@@ -3,6 +3,7 @@ package com.playdata.orderserviceback.product.service;
 
 import com.playdata.orderserviceback.product.dto.ProductResDTO;
 import com.playdata.orderserviceback.product.dto.ProductSaveReqDTO;
+import com.playdata.orderserviceback.product.dto.ProductSearchDTO;
 import com.playdata.orderserviceback.product.entity.Product;
 import com.playdata.orderserviceback.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,14 +54,21 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public List<ProductResDTO> productList(Pageable pageable) {
+    public List<ProductResDTO> productList(ProductSearchDTO dto, Pageable pageable) {
 
-        Page<Product> all = productRepository.findAll(pageable);
+        Page<Product> all;
+        if(dto.getCategory() == null){
+            all = productRepository.findAll(pageable);
+        }
+        else if(dto.getCategory().equals("category")){
+            all = productRepository.findByCategoryValue(dto.getSearchName(),pageable);
+        } else {
+            all = productRepository.findByNameValue(dto.getSearchName(),pageable);
+        }
 
-        List<ProductResDTO> collect = all.getContent()
+
+        return all.getContent()
                 .stream().map(Product::fromEntity)
                 .toList();
-
-        return collect;
     }
 }

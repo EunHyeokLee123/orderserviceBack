@@ -3,6 +3,7 @@ package com.playdata.orderserviceback.product.controller;
 import com.playdata.orderserviceback.common.dto.CommonResDTO;
 import com.playdata.orderserviceback.product.dto.ProductResDTO;
 import com.playdata.orderserviceback.product.dto.ProductSaveReqDTO;
+import com.playdata.orderserviceback.product.dto.ProductSearchDTO;
 import com.playdata.orderserviceback.product.entity.Product;
 import com.playdata.orderserviceback.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -57,16 +58,17 @@ public class ProductController {
     // -> 클라이언트 쪽에서 페이지 번호와 한 화면에 보여질 상품 개수, 정렬 방식이 넘어옴.
     // ProductResDto(id, name, category, price, stockQuantity, imagePath)
     @GetMapping("/list")
-    public ResponseEntity<?> listProduct(Pageable pageable) {
+    public ResponseEntity<?> listProduct(ProductSearchDTO dto, Pageable pageable) {
         // 페이지 번호를 number로 주면 안되고, page로 전달해야 함.
         // 사용자가 선택할 페이지 번호 -1을 클라이언트 단에서 전달해야 함.
         log.info("pageable: {}", pageable);
-        List<ProductResDTO> resDTO = productService.productList(pageable);
+        log.info("dto: {}", dto);
+        List<ProductResDTO> dtoList = productService.productList(dto ,pageable);
 
-        CommonResDTO dto = new CommonResDTO(HttpStatus.OK,
-                "상품 조회 성공", resDTO);
+        CommonResDTO resDto = new CommonResDTO(HttpStatus.OK,
+                "상품 조회 성공", dtoList);
 
-        return ResponseEntity.ok().body(dto);
+        return ResponseEntity.ok().body(resDto);
 
     }
 

@@ -45,8 +45,7 @@ public class UserService {
         // 이메일 중복 안됨 -> 회원가입 진행
         // dto를 entity로 변환하는 로직
         User user = dto.toEntity(encoder);
-        User saved = userRepository.save(user);
-        return saved;
+        return userRepository.save(user);
 
     }
 
