@@ -22,6 +22,6 @@ public class ProductResDTO {
 
     private int stockQuantity;
 
-    private String imageName;
+    private String imagePath;
 
 }

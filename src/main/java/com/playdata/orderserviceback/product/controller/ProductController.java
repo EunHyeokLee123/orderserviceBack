@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -30,7 +31,7 @@ public class ProductController {
     // 상품 등록 요청
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<?> createProduct(ProductSaveReqDTO dto) {
+    public ResponseEntity<?> createProduct(ProductSaveReqDTO dto) throws IOException {
 
         /*
         상품 등록 요청은 여러 데이터와 함께 이미지가 전달될 것임.

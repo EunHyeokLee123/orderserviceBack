@@ -1,6 +1,7 @@
 package com.playdata.orderserviceback.product.service;
 
 
+import com.playdata.orderserviceback.common.configs.AwsS3Config;
 import com.playdata.orderserviceback.product.dto.ProductResDTO;
 import com.playdata.orderserviceback.product.dto.ProductSaveReqDTO;
 import com.playdata.orderserviceback.product.dto.ProductSearchDTO;
@@ -27,10 +28,12 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    private final AwsS3Config s3Config;
 
-    public Product productCreate(ProductSaveReqDTO dto) {
-        // 원본 이미지를 어딘가에 저장하고, 그 저장된 위치를 Entity에 세팅해야함.
-        MultipartFile productImage = dto.getProductImage();
+    public Product productCreate(ProductSaveReqDTO dto) throws IOException {
+        // 원본 이미지를 어딘가(기존에는 로컬)에 저장하고, 그 저장된 위치를 Entity에 세팅해야함.
+
+    /*    MultipartFile productImage = dto.getProductImage();
 
         // 상품을 등록하는 과정에서 이미지 이름의 중복으로 인한 충돌을 방지하기 위해
         // 랜덤한 문자열을 섞어서 충돌을 막아주자.
@@ -46,10 +49,23 @@ public class ProductService {
             productImage.transferTo(file);
         } catch (IOException e) {
             throw new RuntimeException("이미지 저장 실패ㅠㅠ");
-        }
+        }*/
+
+        // 이제는 aws의 s3에 저장되게 하자!
+
+        MultipartFile productImage = dto.getProductImage();
+
+        String uniqueFileName
+                = UUID.randomUUID() + "_" + productImage.getOriginalFilename();
+
+        // 더 이상 로컬 경로에 이미지를 저장하지 말고, s3 버킷에 저장하자!
+        String imageUrl
+                = s3Config.uploadToS3Bucket(productImage.getBytes(), uniqueFileName);
+
 
         Product product = dto.toEntity();
-        product.setImagePath(uniqueFileName);
+        // 파일명이 아닌 S3 url이 저장될 것임.
+        product.setImagePath(imageUrl);
 
         return productRepository.save(product);
     }
